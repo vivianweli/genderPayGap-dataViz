@@ -1,15 +1,34 @@
-let speedFactor = 5;
 let characters = [
-    { x: 0, y: 250, gender: 'Man', color: 'blue', pose: 'running', salary: 500, speed: 1*speedFactor, expression: 'happy'  },
-    { x: 0, y: 450, gender: 'Woman',color: 'pink', pose: 'crawling', salary: 300, speed: 300/500*speedFactor, expression: 'crying' },
-    { x: 0, y: 650, gender: 'Non-binary, genderqueer, or gender non-conforming',color: 'gray', pose: 'walking', salary: 400, speed: 400/500*speedFactor, expression: 'sad' }
+    { x: 0, y: 250, gender: 'Man', color: 'blue', pose: 'running', salary: 500, speed: 1*100, expression: 'happy'  },
+    { x: 0, y: 450, gender: 'Woman',color: 'pink', pose: 'crawling', salary: 300, speed: 300/500*100, expression: 'crying' },
+    { x: 0, y: 650, gender: 'Non-binary, genderqueer, or gender non-conforming',color: 'gray', pose: 'walking', salary: 400, speed: 400/500*100, expression: 'sad' }
     
 ];
 let laneHeight;
-let time = 0;
+var mousewheelCounter = 0;
+var yearsofExp;
 let scaleSize = 2; // Global scale factor
-let moveCharacters = true;
+let degreeChanged = true;
 
+function mouseWheel(event) {
+    if (event.delta > 0) {
+        mousewheelCounter += 1;
+        yearsofExp += 1;
+        if (yearsofExp > 50) {
+            yearsofExp = 50;
+        }
+        move();
+        skip();
+    } else {
+        mousewheelCounter += 1;
+        yearsofExp -= 1;
+        if (yearsofExp < -1) {
+            yearsofExp = -1;
+        }
+        move();
+        skip();
+    }
+}
 function preload(){
     /* read csv file */
      table = loadTable("data/cleaned_stackoverflow_data_edited.csv",
@@ -22,7 +41,7 @@ function setup() {
 
     // Create Degree dropdown
     degreeSelect = createSelect();
-    degreeSelect.position(windowWidth - 423, 50);
+    degreeSelect.position(windowWidth - 240, 50);
     degreeSelect.style('width', '200px'); 
 
     degreeSelect.option('Primary/elementary school');
@@ -34,26 +53,10 @@ function setup() {
     degreeSelect.option('Other doctoral degree (Ph.D., Ed.D., etc.)');
     degreeSelect.option('Professional degree (JD, MD, etc.)');
 
-    degreeSelect.selected('Primary/elementary school');
-    degreeSelect.changed(restart);
+    degreeSelect.selected('Bachelor’s degree (B.A., B.S., B.Eng., etc.)');
+    degreeSelect.changed(degreeHasChanged);
 
-    // Create Years of Experience dropdown
-    expSelect = createSelect();
-    expSelect.position(windowWidth - 180, 50);
-    expSelect.style('width', '100px'); 
-
-
-    expSelect.option('0 - 5 years');
-    expSelect.option('6 - 10 years');
-    expSelect.option('11 - 15 years');
-    expSelect.option('15 - 20 years');
-    expSelect.option('More than 20 years');
-
-    expSelect.selected('0 - 5 years');
-    expSelect.changed(restart);
-
-    (windowWidth, windowHeight);
-
+   
     // Create the "Show Modal" button
     let alertButton = createButton('Learn More');
     alertButton.position(windowWidth/2, 10);
@@ -119,88 +122,135 @@ function setup() {
     closeBtn.mousePressed(() => {
         modal.style('display', 'none');
     });
-
-
-    // button to skip animations
-    let button = createButton('Skip Animations');
-    button.position((width/2 -40), height - 40);
-    button.mousePressed(skip);
     
-    restart();
-
-
-
+    move();
 
 }
+function degreeHasChanged(){
+    degreeChanged = true;
+    move();
+}
 
-function restart(){
-    time = 0;
-    moveCharacters = true;
-    
-    let selectedRange = expSelect.value();
-    let selectedEdu = degreeSelect.value();
-    let minExp, maxExp;
 
-    switch (selectedRange) {
-        case '0 - 5 years':
-            minExp = 0;
-            maxExp = 5;
-            break;
-        case '6 - 10 years':
-            minExp = 6;
-            maxExp = 10;
-            break;
-        case '11 - 15 years':
-            minExp = 11;
-            maxExp = 15;
-            break;
-        case '15 - 20 years':
-            minExp = 15;
-            maxExp = 20;
-            break;
-        case 'More than 20 years':
-            minExp = 21;
-            maxExp = Infinity;
-            break;
+function move(){
+    if (degreeChanged){
+        mousewheelCounter = 0;
+        yearsofExp = -1;
+        degreeChanged = false;
     }
+   
+    let selectedEdu = degreeSelect.value();
+
+    console.log(`Selected Experience: ${yearsofExp}`);
 
     let filteredRows = table.getRows().filter(row => {
         let workExp = row.getNum("WorkExp");
         let education = row.getString("EdLevel");
-        return workExp >= minExp && workExp <= maxExp && education === selectedEdu;
+        return education === selectedEdu;
     });
-
-    let genderGroups = {
-        "Man": [],
-        "Woman": [],
-        "Non-binary, genderqueer, or gender non-conforming": []
+    
+    console.log(`Filtered Rows: ${filteredRows.length}`); // Debugging statement
+    let genderExpGroups = {
+        "Man": {},
+        "Woman": {},
+        "Non-binary, genderqueer, or gender non-conforming": {}
     };
 
     filteredRows.forEach(row => {
         let gender = row.getString("Gender");
+        let workExp = row.getNum("WorkExp");
         let salary = row.getNum("ConvertedCompYearly");
-        if (genderGroups[gender] != undefined) {
-            genderGroups[gender].push(salary);
+        if (genderExpGroups[gender] != undefined) {
+            if (!genderExpGroups[gender][workExp]) {
+                genderExpGroups[gender][workExp] = [];
+            }
+            genderExpGroups[gender][workExp].push(salary);
         }
     });
 
-    for (let gender in genderGroups) {
-        let salaries = genderGroups[gender];
-        let averageSalary = Math.round(salaries.reduce((sum, salary) => sum + salary, 0) / salaries.length/1000, 2);
-        averageSalary = isNaN(averageSalary) ? 0 : averageSalary; // Ensure averageSalary is not NaN
+    let maxAvgSalariesByGender = {};
+
+    for (let gender in genderExpGroups) {
+        let maxAvgSalary = 0;
+        let maxAvgSalaryYear = 0;
+        for (let exp in genderExpGroups[gender]) {
+            let salaries = genderExpGroups[gender][exp];
+            let avgSalary = salaries.reduce((sum, salary) => sum + salary, 0) / salaries.length;
+            avgSalary = isNaN(avgSalary) ? 0 : avgSalary; // Ensure avgSalary is not NaN
+            if (avgSalary > maxAvgSalary) {
+                maxAvgSalary = avgSalary;
+                maxAvgSalaryYear = exp;
+
+            }
+        }
+        maxAvgSalariesByGender[gender] = { salary: maxAvgSalary, year: maxAvgSalaryYear };
+        console.log(`Max average salary for ${gender} (${selectedEdu}): ${maxAvgSalary} in year ${maxAvgSalaryYear}`);
+    }
+
+    let overallMaxAvgSalary = 0;
+    let overallMaxAvgSalaryYear = 0;
+    for (let gender in maxAvgSalariesByGender) {
+        if (maxAvgSalariesByGender[gender].salary > overallMaxAvgSalary) {
+            overallMaxAvgSalary = maxAvgSalariesByGender[gender].salary;
+            overallMaxAvgSalaryYear = maxAvgSalariesByGender[gender].year;
+        }
+    }
+    console.log(`Overall max average salary: ${overallMaxAvgSalary} in year ${overallMaxAvgSalaryYear}`);
+
+    for (let gender in genderExpGroups) {
+        let salaries = genderExpGroups[gender][yearsofExp];
+        let avgSalary = 0;
+        if (salaries && salaries.length > 0) {
+            avgSalary = salaries.reduce((sum, salary) => sum + salary, 0) / salaries.length;
+        }       
+        avgSalary = isNaN(avgSalary) ? 0 : avgSalary; // Ensure avgSalary is not NaN
         characters.forEach(char => {
             if (char.gender == gender) {
-                char.salary = averageSalary;
+                char.salary = Math.round(avgSalary,0);
             }
         });
-        console.log(`Average salary for ${gender} (${selectedRange}, ${selectedEdu}): ${averageSalary}`);
+
     }
-    // Calculate the maximum salary
-    let maxSalary = Math.max(...characters.map(char => char.salary));
+
+    // let filteredExpRows = table.getRows().filter(row => {
+    //     let workExp = row.getNum("WorkExp");
+    //     return workExp === yearsofExp;
+    // });
+
+    // let genderGroups = {
+    //     "Man": [],
+    //     "Woman": [],
+    //     "Non-binary, genderqueer, or gender non-conforming": []
+    // };
+
+    
+    // filteredExpRows.forEach(row => {
+    //     let gender = row.getString("Gender");
+    //     let salary = row.getNum("ConvertedCompYearly");
+    //     if (genderGroups[gender] != undefined) {
+    //         genderGroups[gender].push(salary);
+    //     }
+    // });
+
+    
+    // for (let gender in genderGroups) {
+    //     let salaries = genderGroups[gender];
+    //     let averageSalary = Math.round(salaries.reduce((sum, salary) => sum + salary, 0) / salaries.length/1000, 2);
+    //     averageSalary = isNaN(averageSalary) ? 0 : averageSalary; // Ensure averageSalary is not NaN
+    //     characters.forEach(char => {
+    //         if (char.gender == gender) {
+    //             char.salary = averageSalary;
+    //         }
+    //     });
+    //     console.log(`Average salary for ${gender} (${yearsofExp}, ${selectedEdu}): ${averageSalary}`);
+    // }
 
     // Set the speed based on the ratio of the salary to the maximum salary
     characters.forEach(char => {
-        char.speed = char.salary / maxSalary * speedFactor;
+        console.log(char.gender);
+        char.speed = char.salary / overallMaxAvgSalary * 100;
+        console.log("salary" + char.salary);
+        console.log("speed" + char.speed);
     });
 
     // Sort characters by salary
@@ -220,18 +270,17 @@ function restart(){
         char.x =0; 
         let yOffset = 0;
         drawProgressBar(char);
-        drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}K`, char.expression, time, moveCharacters);
+        drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}`, char.expression, mousewheelCounter);
     
   })
 }
 function skip() {
-  moveCharacters = false;
   characters.forEach(char => {
-    char.progress = char.speed/speedFactor;
-    char.x =(width-47)*char.progress; 
+    char.progress = char.speed;
+    char.x =(width-47)*char.progress/100; 
     let yOffset = 0;
     drawProgressBar(char);
-    drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}K`, char.expression, time, moveCharacters);
+    drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}`, char.expression, mousewheelCounter);
   
   })
   
@@ -245,12 +294,6 @@ function windowResized() {
 function draw() {
     background(255);
 
-
-    if (moveCharacters){
-        time += 0.05;
-    } else{
-        
-    }
     // Draw horizontal lines
     stroke(200);
     strokeWeight(2);
@@ -283,29 +326,29 @@ characters.forEach(char => {
     // Calculate progress
     char.progress = (char.x / (width-50)) * 100;
 
-    // Move characters
-    if (char.progress < 100.0 && moveCharacters) char.x += char.speed;
-    else {
-        moveCharacters = false;
-        char.x =char.x;
-    } 
     
     // Add bobbing motion
     let yOffset = 0;
-    if (moveCharacters){
-        if (char.pose === 'running') {
-        yOffset = sin(time * 10) * 6;
-        } else if (char.pose === 'walking') {
-            yOffset = sin(time * 5) * 4;
-        } else if (char.pose === 'crawling') {
-            yOffset = sin(time * 3) * 2;
-        }
+    if (char.pose === 'running') {
+    yOffset = sin(mousewheelCounter * 10) * 6;
+    } else if (char.pose === 'walking') {
+        yOffset = sin(mousewheelCounter * 5) * 4;
+    } else if (char.pose === 'crawling') {
+        yOffset = sin(mousewheelCounter * 3) * 2;
     }
     
+    textSize(24);
+    fill('black');
+    text('Years of Experience', width-500, 40);
+    fill('blue');
+
+    if (yearsofExp < 0) text("Scroll to start", width-500, 70);
+    else text(yearsofExp, width-500, 70);
+
     // Draw progress bar
     drawProgressBar(char);
     
-    drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}K`, char.expression, time, moveCharacters);
+    drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}`, char.expression, mousewheelCounter);
 });
     
     // Draw title
@@ -329,8 +372,7 @@ characters.forEach(char => {
 
     // Draw title for dropdown
     textSize(18);
-    text("Level of Education", windowWidth - 348, 40);
-    text("Years of Experience", windowWidth - 100, 40);
+    text("Level of Education", windowWidth - 165, 40);
 
     // Draw explanation for data
     textSize(15);
@@ -338,7 +380,7 @@ characters.forEach(char => {
 
 }
 
-function drawPerson(x, y, color, pose, salary, expression, time) {
+function drawPerson(x, y, color, pose, salary, expression, mousewheelCounter) {
 
 push();
 translate(x, y);
@@ -353,44 +395,44 @@ drawGraduationHat(0, -50);
 
 if (pose === 'running') {
     // Running pose with animated legs and arms
-    let legSwing = sin(time * 10) * 30;
-    let armSwing = sin(time * 10) * 40;
+    let legSwing = sin(mousewheelCounter * 10) * 30;
+    let armSwing = sin(mousewheelCounter * 10) * 40;
     
     // Body
     line(0, 0, 0, -40);
     // Arms
-    line(0, -30, cos(time * 10) * 20, -20 + armSwing/2);
-    line(0, -30, -cos(time * 10) * 20, -20 - armSwing/2);
+    line(0, -30, cos(mousewheelCounter * 10) * 20, -20 + armSwing/2);
+    line(0, -30, -cos(mousewheelCounter * 10) * 20, -20 - armSwing/2);
     // Legs
-    line(0, 0, sin(time * 10) * 20, 20 + legSwing/2);
-    line(0, 0, -sin(time * 10) * 20, 20 - legSwing/2);
+    line(0, 0, sin(mousewheelCounter * 10) * 20, 20 + legSwing/2);
+    line(0, 0, -sin(mousewheelCounter * 10) * 20, 20 - legSwing/2);
     
 } else if (pose === 'walking') {
     // Walking pose with slower animation
-    let legSwing = sin(time * 5) * 20;
-    let armSwing = sin(time * 5) * 20;
+    let legSwing = sin(mousewheelCounter * 5) * 20;
+    let armSwing = sin(mousewheelCounter * 5) * 20;
     
     // Body
     line(0, 0, 0, -40);
     // Arms
-    line(0, -30, cos(time * 5) * 16, -20 + armSwing/2);
-    line(0, -30, -cos(time * 5) * 16, -20 - armSwing/2);
+    line(0, -30, cos(mousewheelCounter * 5) * 16, -20 + armSwing/2);
+    line(0, -30, -cos(mousewheelCounter * 5) * 16, -20 - armSwing/2);
     // Legs
-    line(0, 0, sin(time * 5) * 16, 20 + legSwing/2);
-    line(0, 0, -sin(time * 5) * 16, 20 - legSwing/2);
+    line(0, 0, sin(mousewheelCounter * 5) * 16, 20 + legSwing/2);
+    line(0, 0, -sin(mousewheelCounter * 5) * 16, 20 - legSwing/2);
     
 } else if (pose === 'crawling') {
     // Crawling pose with subtle animation
-    let crawlOffset = sin(time * 3) * 10;
-    let armSwing = sin(time * 5);
+    let crawlOffset = sin(mousewheelCounter * 3) * 10;
+    let armSwing = sin(mousewheelCounter * 5);
 
     
     // Body
     line(0, 0, 0, -40);
     line(0, 0, -30+ crawlOffset, 0);
     //Arms
-    line(0, -30, cos(time * 5) * 16, -20 + armSwing/2);
-    line(0, -30, -cos(time * 5) * 16, -20 - armSwing/2);
+    line(0, -30, cos(mousewheelCounter * 5) * 16, -20 + armSwing/2);
+    line(0, -30, -cos(mousewheelCounter * 5) * 16, -20 - armSwing/2);
     // Limbs
     line(-30 + crawlOffset, 10, -30 + crawlOffset, 0);
     line(-10 + crawlOffset, 10, -10 + crawlOffset, 0);
@@ -428,8 +470,8 @@ if (expression === 'happy') {
     fill('lightblue');
     line(-6, -46, -10, -42);
     line(6, -46, 10, -42);
-    ellipse(-8, -30 + sin(time * 5) * 4, 6, 10);
-    ellipse(8, -30 + sin(time * 5 + PI) * 4, 6, 10);
+    ellipse(-8, -30 + sin(mousewheelCounter * 5) * 4, 6, 10);
+    ellipse(8, -30 + sin(mousewheelCounter * 5 + PI) * 4, 6, 10);
 }
 
 function drawGraduationHat(x, y) {
@@ -489,6 +531,6 @@ function drawProgressBar(char) {
     // text(`${char.progress.toFixed(1)}%`, x + barWidth + 30, y + 15);
     
     // Draw speedometer
-    const speed = (char.speed/5) * 100;
+    const speed = char.speed;
     text(`Speed: ${speed.toFixed(1)}%`, x + 100, y -20);
 }
