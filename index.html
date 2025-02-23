@@ -12,8 +12,60 @@
       padding: 0;
       margin: 0;
       overflow: hidden;
+      
     }
     canvas { display: block; }
+    .modal-header {
+        font-family: Arial, sans-serif;
+        font-size: 24px;
+        color: #2c3e50; /* Darker text for headers */
+        font-weight: bold;
+        margin-top: 20px;
+        border-bottom: 2px solid #f39c12; /* Underline effect for clarity */
+        padding-bottom: 5px;
+    }
+
+    /* Styling the list */
+    .modal-list {
+        font-family: Arial, sans-serif;
+        font-size: 18px;
+        color: #34495e; /* Lighter color for text */
+        line-height: 1.6;
+        margin-left: 20px;
+    }
+
+    /* Styling the nested list inside the main list */
+    .modal-list ul {
+        font-family: Arial, sans-serif;
+        
+        list-style-type: disc;
+        margin-left: 40px; /* Indentation for nested lists */
+    }
+
+    .modal-list li {
+        font-family: Arial, sans-serif;
+        font-size: 20px;
+        margin-bottom: 10px; /* Space between list items */
+    }
+
+    /* Styling the links inside the modal */
+    .modal-list a {
+        font-family: Arial, sans-serif;
+        color: #3498db; /* Blue color for links */
+        text-decoration: none;
+    }
+
+    .modal-list a:hover {
+        font-family: Arial, sans-serif;
+        text-decoration: underline; /* Underline effect on hover */
+    }
+
+    .modal-list strong {
+    font-weight: bold;
+    color: #112b5b; /* Red color for keywords */
+    }
+
+    
 
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.1/p5.js"></script>
