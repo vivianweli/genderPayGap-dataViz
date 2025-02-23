@@ -1,15 +1,42 @@
-let speedFactor = 5;
+
+let laneHeight;
+var mousewheelCounter = 0;
+var yearsofExp;
+let scaleSize = 1.5; // Global scale factor
+let degreeChanged = true;
+let offset = 10;
+let xOffset = 30;
+let isModalOpen = false;
+
 let characters = [
-    { x: 0, y: 250, gender: 'Man', color: 'blue', pose: 'running', salary: 500, speed: 1*speedFactor, expression: 'happy'  },
-    { x: 0, y: 450, gender: 'Woman',color: 'pink', pose: 'crawling', salary: 300, speed: 300/500*speedFactor, expression: 'crying' },
-    { x: 0, y: 650, gender: 'Non-binary, genderqueer, or gender non-conforming',color: 'gray', pose: 'walking', salary: 400, speed: 400/500*speedFactor, expression: 'sad' }
+    { x: xOffset, y: 260, gender: 'Man', color: 'blue', pose: 'running', salary: 500, speed: 1*100, expression: 'happy'  },
+    { x: xOffset, y: 460, gender: 'Woman',color: 'pink', pose: 'crawling', salary: 300, speed: 300/500*100, expression: 'crying' },
+    { x: xOffset, y: 660, gender: 'Non-binary, genderqueer, or gender non-conforming',color: 'gray', pose: 'walking', salary: 400, speed: 400/500*100, expression: 'sad' }
     
 ];
-let laneHeight;
-let time = 0;
-let scaleSize = 2; // Global scale factor
-let moveCharacters = true;
 
+function mouseWheel(event) {
+    if (isModalOpen)    return; //don't track mousewheel if modal is open
+    if (event.delta > 0) {
+        mousewheelCounter += 1;
+        yearsofExp += 1;
+        if (yearsofExp > 50) {
+            yearsofExp = 50;
+        }
+        move();
+        skip();
+    } else {
+        mousewheelCounter += 1;
+        yearsofExp -= 1;
+        if (yearsofExp < -1) {
+            yearsofExp = -1;
+
+        };
+        move();
+        skip();
+
+    }
+}
 function preload(){
     /* read csv file */
      table = loadTable("data/cleaned_stackoverflow_data_edited.csv",
@@ -22,7 +49,7 @@ function setup() {
 
     // Create Degree dropdown
     degreeSelect = createSelect();
-    degreeSelect.position(windowWidth - 423, 50);
+    degreeSelect.position(windowWidth - 240, 50);
     degreeSelect.style('width', '200px'); 
 
     degreeSelect.option('Primary/elementary school');
@@ -34,29 +61,30 @@ function setup() {
     degreeSelect.option('Other doctoral degree (Ph.D., Ed.D., etc.)');
     degreeSelect.option('Professional degree (JD, MD, etc.)');
 
-    degreeSelect.selected('Primary/elementary school');
-    degreeSelect.changed(restart);
+    degreeSelect.selected('Bachelor’s degree (B.A., B.S., B.Eng., etc.)');
+    degreeSelect.changed(degreeHasChanged);
 
-    // Create Years of Experience dropdown
-    expSelect = createSelect();
-    expSelect.position(windowWidth - 180, 50);
-    expSelect.style('width', '100px'); 
-
-
-    expSelect.option('0 - 5 years');
-    expSelect.option('6 - 10 years');
-    expSelect.option('11 - 15 years');
-    expSelect.option('15 - 20 years');
-    expSelect.option('More than 20 years');
-
-    expSelect.selected('0 - 5 years');
-    expSelect.changed(restart);
-
-    (windowWidth, windowHeight);
-
+   
     // Create the "Show Modal" button
     let alertButton = createButton('Learn More');
-    alertButton.position(windowWidth/2, 10);
+    alertButton.position((windowWidth-alertButton.elt.offsetWidth)/2, 10);
+    // Customize the button's appearance with CSS
+    alertButton.style('background-color', '#FCBC30'); 
+    alertButton.style('color', '#fff'); // White text
+    alertButton.style('border', 'none');
+    alertButton.style('border-radius', '25px'); // Rounded corners
+    alertButton.style('padding', '10px 20px'); // Space around text
+    alertButton.style('font-size', '18px');
+    alertButton.mouseOver(() => {
+        alertButton.style('background-color', '#e8aa25'); // A slightly darker yellow on hover
+        alertButton.style('cursor', 'pointer');
+        alertButton.style('box-shadow', '0px 8px 12px rgba(0, 0, 0, 0.3)'); // Shadow on hover
+      });
+    
+      alertButton.mouseOut(() => {
+        alertButton.style('background-color', '#FCBC30'); // Reset to original yellow
+        alertButton.style('box-shadow', 'none'); // No shadow when not hovered
+      });
 
     // Create modal elements (hidden initially)
     let modal = createDiv().id('modal');
@@ -84,6 +112,7 @@ function setup() {
     modalContent.style('width', '80%');
     modalContent.style('max-height', '80%');
     modalContent.style('overflow-y', 'auto');
+    modalContent.style('border-radius', '10px');
     modalContent.style('position', 'relative');  // To allow positioning of the close button inside it
 
     // Style the close button
@@ -108,6 +137,7 @@ function setup() {
 
                 // Show the modal
                 modal.style('display', 'block');
+                isModalOpen = true;
             })
             .catch(error => {
                 console.error('Error loading file:', error);
@@ -118,89 +148,142 @@ function setup() {
     // When the "Close" button is clicked, close the modal
     closeBtn.mousePressed(() => {
         modal.style('display', 'none');
+        isModalOpen = false;
     });
-
-
-    // button to skip animations
-    let button = createButton('Skip Animations');
-    button.position((width/2 -40), height - 40);
-    button.mousePressed(skip);
     
-    restart();
-
-
-
+    // This is used to explain lack of data for some genders (with hover text function)
+    header1 = createElement("h1", "No Data?");
+    header1.mouseOver(newText1);
+    header1.mouseOut(oldText1);
+    header2 = createElement("h1", "No Data?");
+    header2.mouseOver(newText2);
+    header2.mouseOut(oldText2);
+    header3 = createElement("h1", "No Data?");
+    header3.mouseOver(newText3);
+    header3.mouseOut(oldText3);
+    move();
 
 }
+function newText1() {
+    header1.html("Unfortunately, we don't have enough data on this educational degree.");
+  }
+  
+  function oldText1() {
+    header1.html("No Data?");
 
-function restart(){
-    time = 0;
-    moveCharacters = true;
-    
-    let selectedRange = expSelect.value();
-    let selectedEdu = degreeSelect.value();
-    let minExp, maxExp;
+}
+function newText2() {
+    header2.html("Unfortunately, female gender make up only 6.1% of our data.");
+  }
+  
+  function oldText2() {
+    header2.html("No Data?");
 
-    switch (selectedRange) {
-        case '0 - 5 years':
-            minExp = 0;
-            maxExp = 5;
-            break;
-        case '6 - 10 years':
-            minExp = 6;
-            maxExp = 10;
-            break;
-        case '11 - 15 years':
-            minExp = 11;
-            maxExp = 15;
-            break;
-        case '15 - 20 years':
-            minExp = 15;
-            maxExp = 20;
-            break;
-        case 'More than 20 years':
-            minExp = 21;
-            maxExp = Infinity;
-            break;
+}
+function newText3() {
+    header3.html("Unfortunately, non-binary gender make up only 2.6% of our data.");
+  }
+  
+  function oldText3() {
+    header3.html("No Data?");
+
+}
+function degreeHasChanged(){
+    degreeChanged = true;
+    move();
+}
+
+
+function move(){
+    // reset to years of experience as starting point
+    if (degreeChanged){
+        mousewheelCounter = 0;
+        yearsofExp = -1;
+        degreeChanged = false;
+
     }
+   
+    let selectedEdu = degreeSelect.value();
 
+    console.log(`Selected Experience: ${yearsofExp}`);
+
+    // get the overall max salary for the selected education level across all genders
     let filteredRows = table.getRows().filter(row => {
         let workExp = row.getNum("WorkExp");
         let education = row.getString("EdLevel");
-        return workExp >= minExp && workExp <= maxExp && education === selectedEdu;
+        return education === selectedEdu;
     });
-
-    let genderGroups = {
-        "Man": [],
-        "Woman": [],
-        "Non-binary, genderqueer, or gender non-conforming": []
+    
+    console.log(`Filtered Rows: ${filteredRows.length}`);
+    let genderExpGroups = {
+        "Man": {},
+        "Woman": {},
+        "Non-binary, genderqueer, or gender non-conforming": {}
     };
 
     filteredRows.forEach(row => {
         let gender = row.getString("Gender");
+        let workExp = row.getNum("WorkExp");
         let salary = row.getNum("ConvertedCompYearly");
-        if (genderGroups[gender] != undefined) {
-            genderGroups[gender].push(salary);
+        if (genderExpGroups[gender] != undefined) {
+            if (!genderExpGroups[gender][workExp]) {
+                genderExpGroups[gender][workExp] = [];
+            }
+            genderExpGroups[gender][workExp].push(salary);
         }
     });
 
-    for (let gender in genderGroups) {
-        let salaries = genderGroups[gender];
-        let averageSalary = Math.round(salaries.reduce((sum, salary) => sum + salary, 0) / salaries.length/1000, 2);
-        averageSalary = isNaN(averageSalary) ? 0 : averageSalary; // Ensure averageSalary is not NaN
+    let maxAvgSalariesByGender = {};
+
+    for (let gender in genderExpGroups) {
+        let maxAvgSalary = 0;
+        let maxAvgSalaryYear = 0;
+        for (let exp in genderExpGroups[gender]) {
+            let salaries = genderExpGroups[gender][exp];
+            let avgSalary = salaries.reduce((sum, salary) => sum + salary, 0) / salaries.length;
+            avgSalary = isNaN(avgSalary) ? 0 : avgSalary; // Ensure avgSalary is not NaN
+            if (avgSalary > maxAvgSalary) {
+                maxAvgSalary = avgSalary;
+                maxAvgSalaryYear = exp;
+
+            }
+        }
+        maxAvgSalariesByGender[gender] = { salary: maxAvgSalary, year: maxAvgSalaryYear };
+        console.log(`Max average salary for ${gender} (${selectedEdu}): ${maxAvgSalary} in year ${maxAvgSalaryYear}`);
+    }
+
+    let overallMaxAvgSalary = 0;
+    let overallMaxAvgSalaryYear = 0;
+    for (let gender in maxAvgSalariesByGender) {
+        if (maxAvgSalariesByGender[gender].salary > overallMaxAvgSalary) {
+            overallMaxAvgSalary = maxAvgSalariesByGender[gender].salary;
+            overallMaxAvgSalaryYear = maxAvgSalariesByGender[gender].year;
+        }
+    }
+    console.log(`Overall max average salary: ${overallMaxAvgSalary} in year ${overallMaxAvgSalaryYear}`);
+
+    // then get the average salary for that years of experience per gender
+    for (let gender in genderExpGroups) {
+        let salaries = genderExpGroups[gender][yearsofExp];
+        let avgSalary = 0;
+        if (salaries && salaries.length > 0) {
+            avgSalary = salaries.reduce((sum, salary) => sum + salary, 0) / salaries.length;
+        }       
+        avgSalary = isNaN(avgSalary) ? 0 : avgSalary; // Ensure avgSalary is not NaN
         characters.forEach(char => {
             if (char.gender == gender) {
-                char.salary = averageSalary;
+                char.salary = Math.round(avgSalary,0);
             }
         });
-        console.log(`Average salary for ${gender} (${selectedRange}, ${selectedEdu}): ${averageSalary}`);
+
     }
-    // Calculate the maximum salary
-    let maxSalary = Math.max(...characters.map(char => char.salary));
 
     // Set the speed based on the ratio of the salary to the maximum salary
     characters.forEach(char => {
-        char.speed = char.salary / maxSalary * speedFactor;
+        console.log(char.gender);
+        char.speed = char.salary / overallMaxAvgSalary * 100;
+        console.log("salary" + char.salary);
+        console.log("speed" + char.speed);
     });
 
     // Sort characters by salary
@@ -217,21 +300,20 @@ function restart(){
 
     characters.forEach(char => {
         char.progress = 0;
-        char.x =0; 
+        char.x = xOffset; 
         let yOffset = 0;
         drawProgressBar(char);
-        drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}K`, char.expression, time, moveCharacters);
+        drawPerson(xOffset, char.y + yOffset,  char.gender, char.color, char.pose, char.progress, char.salary, char.expression, mousewheelCounter);
     
   })
 }
 function skip() {
-  moveCharacters = false;
   characters.forEach(char => {
-    char.progress = char.speed/speedFactor;
-    char.x =(width-47)*char.progress; 
+    char.progress = char.speed;
+    char.x =(width-47-xOffset)*char.progress/100+ xOffset; 
     let yOffset = 0;
     drawProgressBar(char);
-    drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}K`, char.expression, time, moveCharacters);
+    drawPerson(char.x, char.y + yOffset, char.gender, char.color, char.pose, char.progress, char.salary, char.expression, mousewheelCounter);
   
   })
   
@@ -245,18 +327,14 @@ function windowResized() {
 function draw() {
     background(255);
 
-
-    if (moveCharacters){
-        time += 0.05;
-    } else{
-        
-    }
     // Draw horizontal lines
     stroke(200);
     strokeWeight(2);
     let count = 0;
-    for(let y = 200; y < height - 100 && count < 7; y += 100 ) {
-        line(0, y, width, y);
+    for(let y = 200 + offset; y < height - 100 && count < 7; y += 100 ) {
+        if (count == 0 || count == 6) line(0, y, width, y);
+        else line(30,y,width-50,y);
+        
         laneHeight = y;
         count += 1;
     }
@@ -267,11 +345,11 @@ function draw() {
     start.forEach((letter, index) => {
         text(letter, 15, 250+ index*100);  // Adjust x position for each letter
     });
-    line(30, 200, 30, laneHeight);
+    line(30, 200+offset, 30, laneHeight);
 
     // Draw finish line
     let finishX = width - 50;  // Finish line position
-    line(finishX, 200, finishX, laneHeight);
+    line(finishX, 200+offset, finishX, laneHeight);
     let finish = ["F", "I", "N", "I", "S", "H"];
     finish.forEach((letter, index) => {
         text(letter, finishX + 10, 250 + index * 100);  // Adjust x position for each letter
@@ -281,31 +359,31 @@ function draw() {
 characters.forEach(char => {
     
     // Calculate progress
-    char.progress = (char.x / (width-50)) * 100;
+    char.progress = char.speed;
 
-    // Move characters
-    if (char.progress < 100.0 && moveCharacters) char.x += char.speed;
-    else {
-        moveCharacters = false;
-        char.x =char.x;
-    } 
     
-    // Add bobbing motion
+    // // Add bobbing motion
     let yOffset = 0;
-    if (moveCharacters){
-        if (char.pose === 'running') {
-        yOffset = sin(time * 10) * 6;
-        } else if (char.pose === 'walking') {
-            yOffset = sin(time * 5) * 4;
-        } else if (char.pose === 'crawling') {
-            yOffset = sin(time * 3) * 2;
-        }
-    }
+    // if (char.pose === 'running') {
+    // yOffset = sin(mousewheelCounter * 10) * 6;
+    // } else if (char.pose === 'walking') {
+    //     yOffset = sin(mousewheelCounter * 5) * 4;
+    // } else if (char.pose === 'crawling') {
+    //     yOffset = sin(mousewheelCounter * 3) * 2;
+    // }
     
+    textSize(24);
+    fill('black');
+    text('Years of Experience', width-500, 40);
+    fill('blue');
+
+    if (yearsofExp < 0) text("Scroll to start", width-500, 70);
+    else text(yearsofExp, width-500, 70);
+
     // Draw progress bar
     drawProgressBar(char);
     
-    drawPerson(char.x, char.y + yOffset, char.color, char.pose, `$${char.salary}K`, char.expression, time, moveCharacters);
+    drawPerson(char.x, char.y + yOffset, char.gender, char.color, char.pose, char.progress, char.salary, char.expression, mousewheelCounter);
 });
     
     // Draw title
@@ -329,8 +407,7 @@ characters.forEach(char => {
 
     // Draw title for dropdown
     textSize(18);
-    text("Level of Education", windowWidth - 348, 40);
-    text("Years of Experience", windowWidth - 100, 40);
+    text("Level of Education", windowWidth - 165, 40);
 
     // Draw explanation for data
     textSize(15);
@@ -338,7 +415,7 @@ characters.forEach(char => {
 
 }
 
-function drawPerson(x, y, color, pose, salary, expression, time) {
+function drawPerson(x, y, gender, color, pose, progress, salary, expression, mousewheelCounter) {
 
 push();
 translate(x, y);
@@ -353,49 +430,50 @@ drawGraduationHat(0, -50);
 
 if (pose === 'running') {
     // Running pose with animated legs and arms
-    let legSwing = sin(time * 10) * 30;
-    let armSwing = sin(time * 10) * 40;
+    let legSwing = sin(mousewheelCounter * 10) * 30;
+    let armSwing = sin(mousewheelCounter * 10) * 40;
     
     // Body
     line(0, 0, 0, -40);
     // Arms
-    line(0, -30, cos(time * 10) * 20, -20 + armSwing/2);
-    line(0, -30, -cos(time * 10) * 20, -20 - armSwing/2);
+    line(0, -30, cos(mousewheelCounter * 10) * 20, -20 + armSwing/2);
+    line(0, -30, -cos(mousewheelCounter * 10) * 20, -20 - armSwing/2);
+
     // Legs
-    line(0, 0, sin(time * 10) * 20, 20 + legSwing/2);
-    line(0, 0, -sin(time * 10) * 20, 20 - legSwing/2);
+    line(0, 0, sin(mousewheelCounter * 10) * 20, 20 + legSwing/2);
+    line(0, 0, -sin(mousewheelCounter * 10) * 20, 20 - legSwing/2);
     
 } else if (pose === 'walking') {
     // Walking pose with slower animation
-    let legSwing = sin(time * 5) * 20;
-    let armSwing = sin(time * 5) * 20;
+    let legSwing = sin(mousewheelCounter * 5) * 20;
+    let armSwing = sin(mousewheelCounter * 5) * 20;
     
     // Body
     line(0, 0, 0, -40);
     // Arms
-    line(0, -30, cos(time * 5) * 16, -20 + armSwing/2);
-    line(0, -30, -cos(time * 5) * 16, -20 - armSwing/2);
+    line(0, -30, cos(mousewheelCounter * 5) * 16, -20 + armSwing/2);
+    line(0, -30, -cos(mousewheelCounter * 5) * 16, -20 - armSwing/2);
     // Legs
-    line(0, 0, sin(time * 5) * 16, 20 + legSwing/2);
-    line(0, 0, -sin(time * 5) * 16, 20 - legSwing/2);
+    line(0, 0, sin(mousewheelCounter * 5) * 16, 20 + legSwing/2);
+    line(0, 0, -sin(mousewheelCounter * 5) * 16, 20 - legSwing/2);
     
 } else if (pose === 'crawling') {
     // Crawling pose with subtle animation
-    let crawlOffset = sin(time * 3) * 10;
-    let armSwing = sin(time * 5);
+    let crawlOffset = sin(mousewheelCounter*5);
+    let armSwing = sin(mousewheelCounter * 5);
 
     
     // Body
     line(0, 0, 0, -40);
-    line(0, 0, -30+ crawlOffset, 0);
+    line(0, 0, -20+ crawlOffset, 0);
     //Arms
-    line(0, -30, cos(time * 5) * 16, -20 + armSwing/2);
-    line(0, -30, -cos(time * 5) * 16, -20 - armSwing/2);
+    line(0, -30, cos(mousewheelCounter * 5) * 16, -20 + armSwing/2);
+    line(0, -30, -cos(mousewheelCounter * 5) * 16, -20 - armSwing/2);
     // Limbs
-    line(-30 + crawlOffset, 10, -30 + crawlOffset, 0);
-    line(-10 + crawlOffset, 10, -10 + crawlOffset, 0);
-    line(-40 + crawlOffset, 10, -30 + crawlOffset, 10);
-    line(-20 + crawlOffset, 10, -10 + crawlOffset, 10);
+    line(-20 + crawlOffset, 10, -20 + crawlOffset, 0);
+    line(crawlOffset, 10,  crawlOffset, 0);
+    line(-30 + crawlOffset, 10, -20 + crawlOffset, 10);
+    line(-10 + crawlOffset, 10,  crawlOffset, 10);
 }
 
 // Draw head and expression
@@ -404,6 +482,7 @@ ellipse(0, -40, 40, 40);
 
 
 // Draw facial expression
+fill('black');
 stroke(0);
 strokeWeight(2);
 if (expression === 'happy') {
@@ -428,8 +507,8 @@ if (expression === 'happy') {
     fill('lightblue');
     line(-6, -46, -10, -42);
     line(6, -46, 10, -42);
-    ellipse(-8, -30 + sin(time * 5) * 4, 6, 10);
-    ellipse(8, -30 + sin(time * 5 + PI) * 4, 6, 10);
+    ellipse(-8, -30 + sin(mousewheelCounter * 5) * 4, 6, 10);
+    ellipse(8, -30 + sin(mousewheelCounter * 5 + PI) * 4, 6, 10);
 }
 
 function drawGraduationHat(x, y) {
@@ -440,17 +519,17 @@ function drawGraduationHat(x, y) {
         strokeWeight(2);
         
         // Draw the top of the hat
-        rect(x - 20, y - 10, 40, 10);
+        rect(x - 20, y - 10, 40, 5);
 
         // Draw the base of the hat
-        triangle(x - 30, y - 10, x + 30, y - 10, x, y - 30);
+        triangle(x - 30, y - 10, x + 30, y - 10, x, y -20);
 
         fill("white");
-        textSize(15);
+        textSize(10);
         if (education == "Secondary school (e.g. American high school, German Realschule or Gymnasium, etc.)") text("H", x, y-15);
-        else if (education == "Associate degree (A.A., A.S., etc.)") text("A", x, y-15);
-        else if(education == "Bachelor’s degree (B.A., B.S., B.Eng., etc.)") text("B", x, y-15);
-        else if (education == "Master’s degree (M.A., M.S., M.Eng., MBA, etc.)") text("M", x, y-15);
+        else if (education == "Associate degree (A.A., A.S., etc.)") text("A", x, y-11);
+        else if(education == "Bachelor’s degree (B.A., B.S., B.Eng., etc.)") text("B", x, y-11);
+        else if (education == "Master’s degree (M.A., M.S., M.Eng., MBA, etc.)") text("M", x, y-11);
         else text("D", x, y-15);
         
     } 
@@ -458,11 +537,44 @@ function drawGraduationHat(x, y) {
 }
 
 
-// Salary text
+// Salary or NoData text
 fill(0);
 noStroke();
 textSize(20);
-text(salary, 0, 60);
+if (yearsofExp >= 0){
+    if (salary != "0"){
+        header1.hide();
+        header2.hide();
+        header3.hide();
+        // add comma for thousands
+        let formattedSalary = salary.toLocaleString(); 
+        if(progress > 10){
+            fill(255);
+            text('$'+formattedSalary, -80, 7); 
+        } else{
+            fill('black');
+            text('$'+formattedSalary, 80, 7); 
+        }
+        
+    }
+    else{
+        if (gender == "Woman"){
+            header2.show();
+            header2.position((width - header2.elt.offsetWidth) / 2, y - 40);
+        } else if (gender == "Non-binary, genderqueer, or gender non-conforming"){
+            header3.show();
+            header3.position((width - header3.elt.offsetWidth) / 2, y - 40);
+        } else {
+            header1.show();
+            header1.position((width - header1.elt.offsetWidth) / 2, y - 40);
+        }
+    }
+       
+} else{
+    header1.hide();
+    header2.hide();
+    header3.hide();
+}
 
 pop();
 
@@ -482,6 +594,7 @@ function drawProgressBar(char) {
     // Draw progress
     fill(char.color);
     rect(x, y, (char.progress/100) * barWidth, barHeight);
+    console.log(char.progress);
     
     // Draw text
     // fill(0);
@@ -489,6 +602,6 @@ function drawProgressBar(char) {
     // text(`${char.progress.toFixed(1)}%`, x + barWidth + 30, y + 15);
     
     // Draw speedometer
-    const speed = (char.speed/5) * 100;
-    text(`Speed: ${speed.toFixed(1)}%`, x + 100, y -20);
+    const speed = char.speed;
+    text(`Progress: ${speed.toFixed(1)}%`, x + 100, y -45);
 }
