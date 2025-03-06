@@ -8,8 +8,8 @@ How do years of professional experience and level of education relate to the gen
 ## Dataset Used
 2022 Stack Overflow Annual Developer Survey. This can be found on https://survey.stackoverflow.co/. 
 ## Website Interactions
-1. Change Level of Education on the top right dropdown
-2. Change Years of Experience by Scrolling up and down (more precision with a mouse)
+1. Change **Level of Education** on the top right dropdown
+2. Change **Years of Experience** by Scrolling up and down (more precision with a mouse)
   !<img width="1392" alt="image" src="https://github.com/user-attachments/assets/1e728d56-f158-45cf-b43a-870c59504ddb" />
 3. Hover over **"No Data"** text for some explanation (shown when a track has no data)
    - e.g. "Unfortunately, non-binary gender make up only 2.6% of our data."
