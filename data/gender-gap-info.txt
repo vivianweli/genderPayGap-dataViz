@@ -1,0 +1,59 @@
+<div id="modalContent">
+    <h2 class="modal-header">1. Key Factors Contributing to the Gender Pay Gap</h2>
+    <ul class="modal-list">
+        <li><strong>Career Interruptions</strong> significantly impact women's career progression:
+            <ul>
+                <li>Women are more likely to take <strong>extended breaks</strong> for childcare and family responsibilities</li>
+                <li>These breaks result in <strong>reduced work experience</strong> and missed opportunities for advancement</li>
+                <li>Returning to work often involves <strong>salary penalties</strong> and difficulty regaining career momentum</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 class="modal-header">2. Workplace and Industry Factors</h2>
+    <ul class="modal-list">
+        <li><strong>Discrimination and Bias</strong> in the workplace:
+            <ul>
+                <li>Unconscious bias in <strong>hiring</strong>, <strong>promotion</strong>, and <strong>pay decisions</strong></li>
+                <li>Women often receive <strong>lower initial salary offers</strong> than men for the same positions</li>
+                <li>Limited access to <strong>senior roles</strong> and leadership positions</li>
+            </ul>
+        </li>
+        <li><strong>Industry Segregation</strong>:
+            <ul>
+                <li>Women are underrepresented in <strong>high-paying technical roles</strong></li>
+                <li>Concentration in traditionally <strong>lower-paying sectors</strong></li>
+                <li>Fewer women in <strong>executive positions</strong> and technical leadership roles</li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 class="modal-header">3. Work-Life Balance Considerations</h2>
+    <ul class="modal-list">
+        <li><strong>Flexible Work Arrangements</strong>:
+            <ul>
+                <li>Higher likelihood of choosing <strong>part-time work</strong> or flexible schedules</li>
+                <li>Reduced availability for <strong>overtime</strong> or travel opportunities</li>
+                <li>Trading higher salaries for <strong>work-life balance</strong></li>
+            </ul>
+        </li>
+    </ul>
+
+    <h2 class="modal-header">4. Negotiation and Advancement</h2>
+    <ul class="modal-list">
+        <li><strong>Negotiation Patterns</strong>:
+            <ul>
+                <li>Women are less likely to <strong>negotiate starting salaries</strong></li>
+                <li>Face potential <strong>social penalties</strong> for assertive negotiation</li>
+                <li>Limited access to <strong>salary information</strong> and professional networks</li>
+            </ul>
+        </li>
+        <li><strong>Professional Development</strong>:
+            <ul>
+                <li>Reduced access to <strong>mentorship</strong> and sponsorship opportunities</li>
+                <li>Fewer opportunities for <strong>skill development</strong> and advancement</li>
+                <li>Impact of <strong>gender stereotypes</strong> on professional growth</li>
+            </ul>
+        </li>
+    </ul>
+</div>

@@ -32,9 +32,9 @@
     <ul class="modal-list">
         <li>The three parallel tracks represent different gender groups, each with distinct <strong>salary progression speeds</strong>:</li>
         <ul>
-            <li><strong>Blue track</strong>: Male.</li>
-            <li><strong>Pink track</strong>: Female.</li>
-            <li><strong>Grey track</strong>: Non-binary.</li>
+            <li><strong>Seagull track</strong>: Male.</li>
+            <li><strong>Light Salmon Pink track</strong>: Female.</li>
+            <li><strong>Periwnkle track</strong>: Non-binary.</li>
         </ul>
         <li>These tracks adjust dynamically based on the selected <strong>education level</strong> and <strong>years of experience</strong>, allowing users to visualize how career progression and salary growth vary among groups with identical qualifications.</li>
         <li><strong>Dropdown menus</strong> at the top enable filtering by <strong>education level</strong>.</li>

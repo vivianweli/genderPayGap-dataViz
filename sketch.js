@@ -9,11 +9,12 @@ let xOffset = 30;
 let isModalOpen = false;
 
 let characters = [
-    { x: xOffset, y: 260, gender: 'Man', color: 'blue', pose: 'running', salary: 500, speed: 1*100, expression: 'happy'  },
-    { x: xOffset, y: 460, gender: 'Woman',color: 'pink', pose: 'crawling', salary: 300, speed: 300/500*100, expression: 'crying' },
-    { x: xOffset, y: 660, gender: 'Non-binary, genderqueer, or gender non-conforming',color: 'gray', pose: 'walking', salary: 400, speed: 400/500*100, expression: 'sad' }
-    
+    { x: xOffset, y: 260, gender: 'Man', color: '#86BBD8', pose: 'running', salary: 500, speed: 1*100, expression: 'happy' },
+    { x: xOffset, y: 460, gender: 'Woman', color: '#F5B895', pose: 'crawling', salary: 300, speed: 300/500*100, expression: 'crying' },
+    { x: xOffset, y: 660, gender: 'Non-binary, genderqueer, or gender non-conforming', color: '#C7CEEA', pose: 'walking', salary: 400, speed: 400/500*100, expression: 'sad' }
 ];
+
+
 
 function mouseWheel(event) {
     if (isModalOpen)    return; //don't track mousewheel if modal is open
@@ -148,6 +149,103 @@ function setup() {
     // When the "Close" button is clicked, close the modal
     closeBtn.mousePressed(() => {
         modal.style('display', 'none');
+        isModalOpen = false;
+    });
+    
+
+    // Create the "Why Gender Pay Gap?" button
+    let genderGapButton = createButton('Why is there a Gender Pay Gap?');
+
+    // Position the button aligned to the left rather than centered
+    // Here, we set it 30 pixels from the left edge and just above the note text
+    let leftMargin = 30;
+    let spacing = 10; // Space between the button and the note text
+    genderGapButton.position(
+    leftMargin, 
+    windowHeight - 50 - genderGapButton.elt.offsetHeight - spacing
+    );
+
+    // Customize the button's appearance with CSS
+    genderGapButton.style('background-color', '#8FB9AA');  // New muted teal color
+    genderGapButton.style('color', '#fff');
+    genderGapButton.style('border', 'none');
+    genderGapButton.style('border-radius', '25px');
+    genderGapButton.style('padding', '10px 20px');
+    genderGapButton.style('font-size', '18px');
+
+    genderGapButton.mouseOver(() => {
+        genderGapButton.style('background-color', '#8FB9AA');
+        genderGapButton.style('cursor', 'pointer');
+        genderGapButton.style('box-shadow', '0px 8px 12px rgba(0, 0, 0, 0.3)');
+    });
+
+    genderGapButton.mouseOut(() => {
+        genderGapButton.style('background-color', '#8FB9AA');
+        genderGapButton.style('box-shadow', 'none');
+    });
+
+    // Create modal elements for gender gap explanation
+    let genderGapModal = createDiv().id('genderGapModal');
+    let genderGapModalContent = createDiv().id('genderGapModalContent');
+    let genderGapCloseBtn = createButton('x Close x').id('genderGapCloseBtn');
+
+    // Append modal content and close button
+    genderGapModal.child(genderGapModalContent);
+    genderGapModal.child(genderGapCloseBtn);
+
+    // Style gender gap modal
+    genderGapModal.style('display', 'none');
+    genderGapModal.style('position', 'fixed');
+    genderGapModal.style('top', '0');
+    genderGapModal.style('left', '0');
+    genderGapModal.style('width', '100%');
+    genderGapModal.style('height', '100%');
+    genderGapModal.style('background-color', 'rgba(0, 0, 0, 0.7)');
+    genderGapModal.style('z-index', '1');
+
+    // Style gender gap modal content
+    genderGapModalContent.style('background-color', '#fff');
+    genderGapModalContent.style('margin', '5% auto');
+    genderGapModalContent.style('padding', '20px');
+    genderGapModalContent.style('width', '80%');
+    genderGapModalContent.style('max-height', '80%');
+    genderGapModalContent.style('overflow-y', 'auto');
+    genderGapModalContent.style('border-radius', '10px');
+    genderGapModalContent.style('position', 'relative');
+
+    // Style gender gap close button
+    genderGapCloseBtn.style('color', '#aaa');
+    genderGapCloseBtn.style('font-size', '28px');
+    genderGapCloseBtn.style('font-weight', 'bold');
+    genderGapCloseBtn.style('cursor', 'pointer');
+    genderGapCloseBtn.style('position', 'absolute');
+    genderGapCloseBtn.style('top', '10px');
+    genderGapCloseBtn.style('right', '20px');
+    genderGapCloseBtn.style('background', 'transparent');
+    genderGapCloseBtn.style('border', 'none');
+    genderGapCloseBtn.style('padding', '5px');
+
+    // When the gender gap button is clicked, fetch file content and show the modal
+    genderGapButton.mousePressed(() => {
+        fetch('data/gender-gap-info.txt')
+            .then(response => response.text())
+            .then(data => {
+                // Set the modal content with the fetched file data
+                genderGapModalContent.html(`<p>${data}</p>`);
+
+                // Show the modal
+                genderGapModal.style('display', 'block');
+                isModalOpen = true;
+            })
+            .catch(error => {
+                console.error('Error loading file:', error);
+                alert('Failed to load file content.');
+            });
+    });
+
+    // When the Close button is clicked, close the modal
+    genderGapCloseBtn.mousePressed(() => {
+        genderGapModal.style('display', 'none');
         isModalOpen = false;
     });
     
@@ -384,6 +482,12 @@ characters.forEach(char => {
     drawProgressBar(char);
     
     drawPerson(char.x, char.y + yOffset, char.gender, char.color, char.pose, char.progress, char.salary, char.expression, mousewheelCounter);
+
+    // Draw data source acknowledgment
+    textSize(12);
+    fill(0);
+    textAlign(CENTER);
+    text("Data Source: Stack Overflow Developer Survey Results", width / 2, height - 30);
 });
     
     // Draw title
@@ -398,11 +502,11 @@ characters.forEach(char => {
 
     // Draw legend
     textSize(24);
-    fill('blue');
+    fill('#86BBD8');
     text('Men', 100, 60);
-    fill('pink');
+    fill('#F5B895');
     text('Women', 220, 60);
-    fill('gray');
+    fill('#C7CEEA');
     text('Non-Binary', 380, 60);
 
     // Draw title for dropdown
