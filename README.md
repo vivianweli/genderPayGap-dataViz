@@ -1,5 +1,6 @@
 # The Unfair Race
-<img width="1392" alt="image" src="https://github.com/user-attachments/assets/2bdca92f-5efb-422d-921e-7ac598c24cc4" />
+<img width="1392" height="803" alt="image" src="https://github.com/user-attachments/assets/657f0e7b-301d-46ef-adea-6f4d76f8ef92" />
+
 This data visualization project aims to explore the gender pay gap in the technology field in the USA. Despite all progress towards gender equality, gender pay gap is still prevalent in first-world countries like the USA. This issue is relevant for students entering the workforce, as both male and female students could be unaware of this pay inequality, with the female students
 suffering from the consequences of the pay disparities.
 
@@ -10,11 +11,11 @@ How do years of professional experience and level of education relate to the gen
 ## Website Interactions
 1. Change **Level of Education** on the top right dropdown
 2. Change **Years of Experience** by Scrolling up and down (more precision with a mouse)
-  !<img width="1392" alt="image" src="https://github.com/user-attachments/assets/1e728d56-f158-45cf-b43a-870c59504ddb" />
+<img width="1392" height="803" alt="image" src="https://github.com/user-attachments/assets/4552b0fa-3d71-4325-8541-1ad9b989b41a" />
 3. Hover over **"No Data"** text for some explanation (shown when a track has no data)
    - e.g. "Unfortunately, non-binary gender make up only 2.6% of our data."
 4. Press **"Learn More"** button to read the context of our visualization and project
-5. Press **"Why is there a Gender Pay Gap"** button to learn more about this gender inequality topic
+5. Press **"Why is there a Gender Pay Gap?"** button to learn more about this gender inequality topic
 
 ## Data Cleaning
 1. We opened the dataset in OpenRefine and started cleaning out the questions (columns) that were not relevant to us such as : “How easy or difficult was this survey to complete?, How do you feel about the length of the survey this year?” and more.
