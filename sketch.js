@@ -159,11 +159,7 @@ function setup() {
     // Position the button aligned to the left rather than centered
     // Here, we set it 30 pixels from the left edge and just above the note text
     let leftMargin = 30;
-    let spacing = 10; // Space between the button and the note text
-    genderGapButton.position(
-    leftMargin, 
-    windowHeight - 50 - genderGapButton.elt.offsetHeight - spacing
-    );
+    genderGapButton.position(leftMargin, height-100);
 
     // Customize the button's appearance with CSS
     genderGapButton.style('background-color', '#8FB9AA');  // New muted teal color
